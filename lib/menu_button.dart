@@ -4,30 +4,31 @@ import 'package:flutter/material.dart';
 
 /// Custom MenuButton to display a menu button following Material Design example
 class MenuButton<T> extends StatefulWidget {
-  const MenuButton(
-      {required final this.child,
-      required final this.items,
-      required final this.itemBuilder,
-      final this.toggledChild,
-      final this.divider = const Divider(
-        height: 1,
-        color: Colors.grey,
-      ),
-      final this.topDivider = true,
-      final this.onItemSelected,
-      final this.decoration,
-      final this.onMenuButtonToggle,
-      final this.scrollPhysics = const NeverScrollableScrollPhysics(),
-      final this.popupHeight,
-      final this.crossTheEdge = false,
-      final this.edgeMargin = 0.0,
-      final this.showSelectedItemOnList = true,
-      final this.selectedItem,
-      final this.label,
-      final this.labelDecoration,
-      final this.itemBackgroundColor = Colors.white,
-      final this.menuButtonBackgroundColor = Colors.white})
-      : assert(showSelectedItemOnList || selectedItem != null);
+  const MenuButton({
+    required final this.child,
+    required final this.items,
+    required final this.itemBuilder,
+    final this.toggledChild,
+    final this.divider = const Divider(
+      height: 1,
+      color: Colors.grey,
+    ),
+    final this.topDivider = true,
+    final this.onItemSelected,
+    final this.decoration,
+    final this.onMenuButtonToggle,
+    final this.scrollPhysics = const NeverScrollableScrollPhysics(),
+    final this.popupHeight,
+    final this.crossTheEdge = false,
+    final this.edgeMargin = 0.0,
+    final this.showSelectedItemOnList = true,
+    final this.selectedItem,
+    final this.label,
+    final this.labelDecoration,
+    final this.itemBackgroundColor = Colors.white,
+    final this.menuButtonBackgroundColor = Colors.white,
+    // final this.shrinkWrap = true,
+  }) : assert(showSelectedItemOnList || selectedItem != null);
 
   /// Widget to display the default button to trigger the menu button
   final Widget child;
@@ -86,6 +87,9 @@ class MenuButton<T> extends StatefulWidget {
   /// Background color of menu button [default = Colors.white]
   final Color menuButtonBackgroundColor;
 
+  /// Shrink-Wrap listview according to its children or not
+  // final bool shrinkWrap;
+
   @override
   State<StatefulWidget> createState() => _MenuButtonState<T>();
 }
@@ -134,7 +138,9 @@ class _MenuButtonState<T> extends State<MenuButton<T>> {
         child: Material(
           color: widget.menuButtonBackgroundColor,
           child: InkWell(
-            borderRadius: decoration.borderRadius != null ? decoration.borderRadius as BorderRadius : null,
+            borderRadius: decoration.borderRadius != null
+                ? decoration.borderRadius as BorderRadius
+                : null,
             child: Container(
               child: widget.child,
             ),
@@ -337,36 +343,40 @@ class _MenuButtonState<T> extends State<MenuButton<T>> {
       Navigator.push(
         context,
         _MenuRoute<T>(
-            position: position,
-            items: items,
-            toggledChild: toggledChild,
-            divider: divider,
-            topDivider: topDivider,
-            decoration: decoration,
-            scrollPhysics: scrollPhysics,
-            popupHeight: popupHeight,
-            crossTheEdge: crossTheEdge,
-            edgeMargin: edgeMargin,
-            buttonWidth: buttonWidth,
-            itemBackgroundColor: itemBackgroundColor),
+          position: position,
+          items: items,
+          toggledChild: toggledChild,
+          divider: divider,
+          topDivider: topDivider,
+          decoration: decoration,
+          scrollPhysics: scrollPhysics,
+          popupHeight: popupHeight,
+          crossTheEdge: crossTheEdge,
+          edgeMargin: edgeMargin,
+          buttonWidth: buttonWidth,
+          itemBackgroundColor: itemBackgroundColor,
+          shrinkWrap: true,
+        ),
       );
 }
 
 /// A custom [PopupRoute] which is pushed on [Navigator] when menu button is toggled
 class _MenuRoute<T> extends PopupRoute<T> {
-  _MenuRoute(
-      {required final this.position,
-      required final this.items,
-      required final this.topDivider,
-      required final this.decoration,
-      required final this.crossTheEdge,
-      required final this.edgeMargin,
-      required final this.buttonWidth,
-      required final this.itemBackgroundColor,
-      required final this.scrollPhysics,
-      required final this.divider,
-      final this.popupHeight,
-      final this.toggledChild});
+  _MenuRoute({
+    required final this.position,
+    required final this.items,
+    required final this.topDivider,
+    required final this.decoration,
+    required final this.crossTheEdge,
+    required final this.edgeMargin,
+    required final this.buttonWidth,
+    required final this.itemBackgroundColor,
+    required final this.scrollPhysics,
+    required final this.divider,
+    final this.popupHeight,
+    final this.toggledChild,
+    required final this.shrinkWrap,
+  });
 
   /// Position of the popup
   final RelativeRect position;
@@ -401,6 +411,8 @@ class _MenuRoute<T> extends PopupRoute<T> {
 
   /// Force a define height for the popup view
   final double? popupHeight;
+
+  final bool shrinkWrap;
 
   @override
   Color? get barrierColor => null;
@@ -447,6 +459,7 @@ class _MenuRoute<T> extends PopupRoute<T> {
                 edgeMargin: edgeMargin,
                 buttonWidth: buttonWidth,
                 itemBackgroundColor: itemBackgroundColor,
+                shrinkWrap: shrinkWrap,
               ),
             );
           },
@@ -485,6 +498,7 @@ class _Menu<T> extends StatefulWidget {
     required final this.itemBackgroundColor,
     required final this.scrollPhysics,
     final this.popupHeight,
+    required final this.shrinkWrap,
   }) : super(key: key);
 
   final _MenuRoute<T> route;
@@ -506,6 +520,8 @@ class _Menu<T> extends StatefulWidget {
 
   /// Force a define height for the popup view
   final double? popupHeight;
+
+  final bool shrinkWrap;
 
   @override
   __MenuState<T> createState() => __MenuState<T>();
@@ -554,55 +570,74 @@ class __MenuState<T> extends State<_Menu<T>> {
     final CurveTween height = CurveTween(curve: const Interval(0.0, .9));
     final CurveTween shadow = CurveTween(curve: const Interval(0.0, 1.0 / 4.0));
 
-    return Material(
-      color: Colors.transparent,
-      child: AnimatedBuilder(
-        animation: widget.route.animation!,
-        builder: (BuildContext context, Widget? child) => Opacity(
-          opacity: opacity.evaluate(widget.route.animation!),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            key: key,
-            width: width ?? widget.buttonWidth,
-            height: widget.popupHeight,
-            decoration: BoxDecoration(
-              color: widget.route.decoration.color ??
-                  widget.route.itemBackgroundColor,
-              border: widget.route.decoration.border,
-              borderRadius: widget.route.decoration.borderRadius != null ? widget.route.decoration.borderRadius : null,
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                    color: Color.fromARGB(
-                        (20 * shadow.evaluate(widget.route.animation!)).toInt(),
-                        0,
-                        0,
-                        0),
-                    offset: Offset(
-                        0.0, 3.0 * shadow.evaluate(widget.route.animation!)),
-                    blurRadius: 5.0 * shadow.evaluate(widget.route.animation!))
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: widget.route.decoration.borderRadius != null ? widget.route.decoration.borderRadius as BorderRadius : BorderRadius.zero,
-              child: IntrinsicWidth(
-                child: SingleChildScrollView(
-                  physics: widget.scrollPhysics,
-                  child: ListBody(children: <Widget>[
-                    _MenuButtonToggledChild(
-                      child: widget.route.toggledChild ?? Container(),
-                      itemBackgroundColor: widget.itemBackgroundColor,
-                    ),
-                    Align(
-                      alignment: AlignmentDirectional.topStart,
-                      widthFactor: 1.0,
-                      heightFactor: height.evaluate(widget.route.animation!),
-                      child: SingleChildScrollView(
-                        child: ListBody(
-                          children: children,
+    return SafeArea(
+      child: Material(
+        color: Colors.transparent,
+        child: AnimatedBuilder(
+          animation: widget.route.animation!,
+          builder: (BuildContext context, Widget? child) => Opacity(
+            opacity: opacity.evaluate(widget.route.animation!),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              key: key,
+              width: width ?? widget.buttonWidth,
+              height: widget.popupHeight,
+              decoration: BoxDecoration(
+                color: widget.route.decoration.color ??
+                    widget.route.itemBackgroundColor,
+                border: widget.route.decoration.border,
+                borderRadius: widget.route.decoration.borderRadius,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                      color: Color.fromARGB(
+                          (20 * shadow.evaluate(widget.route.animation!))
+                              .toInt(),
+                          0,
+                          0,
+                          0),
+                      offset: Offset(
+                          0.0, 3.0 * shadow.evaluate(widget.route.animation!)),
+                      blurRadius:
+                          5.0 * shadow.evaluate(widget.route.animation!))
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: widget.route.decoration.borderRadius != null
+                    ? widget.route.decoration.borderRadius as BorderRadius
+                    : BorderRadius.zero,
+                child: IntrinsicWidth(
+                  child: Stack(
+                    children: <Widget>[
+                      ScrollConfiguration(
+                        behavior: const NoGlowingBehavior(),
+                        child: ListView(
+                          shrinkWrap: true,
+                          // physics: const NeverScrollableScrollPhysics(),
+                          children: <Widget>[
+                            Opacity(
+                              opacity: 0.0,
+                              child: _MenuButtonToggledChild(
+                                child: widget.route.toggledChild ?? Container(),
+                                itemBackgroundColor: widget.itemBackgroundColor,
+                              ),
+                            ),
+                            ListView(
+                              shrinkWrap: widget.shrinkWrap,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: children,
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ]),
+                      Positioned(
+                        top: 0.0,
+                        child: _MenuButtonToggledChild(
+                          child: widget.route.toggledChild ?? Container(),
+                          itemBackgroundColor: widget.itemBackgroundColor,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -683,7 +718,7 @@ class LabelDecoration {
 /// Utils class with useful method
 /// [getTextSize] - Calculate text size from a [Text] widget
 /// [showSelectedItemOnList] - Create a new map without the selected item
-class MenuButtonUtils {
+mixin MenuButtonUtils {
   static Size getTextSize(String? text, TextStyle? style) {
     final TextPainter textPainter = TextPainter(
         text: TextSpan(text: text, style: style),
@@ -731,3 +766,13 @@ typedef MenuButtonToggleCallback = void Function(bool isToggle);
 typedef MenuItemBuilder<T> = Widget Function(T value);
 
 typedef MenuItemSelected<T> = void Function(T value);
+
+class NoGlowingBehavior extends ScrollBehavior {
+  const NoGlowingBehavior();
+
+  @override
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
+  }
+}

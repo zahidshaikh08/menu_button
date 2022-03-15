@@ -77,7 +77,8 @@ class _ScrollPhysicsMenuButtonState extends State<ScrollPhysicsMenuButton> {
           child: scrollChildButton,
           items: keys,
           topDivider: true,
-          scrollPhysics: const AlwaysScrollableScrollPhysics(),
+          // popupHeight: 300,
+          // scrollPhysics: const AlwaysScrollableScrollPhysics(),
           itemBuilder: (String value) => Container(
             height: 40,
             alignment: Alignment.centerLeft,
